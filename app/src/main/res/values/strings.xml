@@ -7,6 +7,7 @@
     <string name="notif_unlocked_empty">Add a memo</string>
     <string name="memo_hint">What were you about to do?</string>
     <string name="btn_save">Save</string>
+    <string name="btn_cancel">Cancel</string>
     <string name="no_memos">No memos yet</string>
     <string name="other_items">Other %d item(s)</string>
     <string name="deleted">Deleted</string>
@@ -21,4 +22,6 @@
     <string name="msg_notif_required">Notification permission is required</string>
     <string name="desc_main">Take notes directly from your lock screen.\nEnable the persistent notification below.</string>
     <string name="tip_tile">Tip: Add the Quick Memo tile to your Quick Settings panel for faster access.</string>
+    <string name="keyword_edit_title">Edit keywords</string>
+    <string name="keyword_edit_hint">Comma separated (e.g. web, buy, call)</string>
 </resources>

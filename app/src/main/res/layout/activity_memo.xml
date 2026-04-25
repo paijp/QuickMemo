@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:background="#1A1A2E">
 
+    <!-- Top bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,13 +34,14 @@
             android:layout_marginStart="4dp" />
     </LinearLayout>
 
+    <!-- Input row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:paddingBottom="12dp">
+        android:paddingBottom="8dp">
 
         <EditText
             android:id="@+id/memoInput"
@@ -71,12 +73,48 @@
             android:paddingHorizontal="16dp" />
     </LinearLayout>
 
+    <!-- Keyword buttons bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="10dp">
+
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/keywordContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <ImageButton
+            android:id="@+id/btnEditKeywords"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_edit"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:scaleType="center"
+            android:contentDescription="Edit keywords"
+            android:layout_marginStart="4dp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#2A2A3E"
         android:layout_marginHorizontal="16dp" />
 
+    <!-- Scrollable list -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
