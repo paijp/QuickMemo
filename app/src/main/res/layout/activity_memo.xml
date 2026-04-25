@@ -114,7 +114,7 @@
         android:background="#2A2A3E"
         android:layout_marginHorizontal="16dp" />
 
-    <!-- Scrollable list -->
+    <!-- Scrollable: memo list + calendar -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -122,13 +122,43 @@
         android:fillViewport="true">
 
         <LinearLayout
-            android:id="@+id/listContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="24dp" />
+            android:orientation="vertical">
+
+            <!-- Memo list -->
+            <LinearLayout
+                android:id="@+id/listContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
+
+            <!-- Divider before calendar -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#2A2A3E"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Calendar (display only) -->
+            <CalendarView
+                android:id="@+id/calendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginBottom="16dp"
+                android:dateTextAppearance="@style/CalendarDateText"
+                android:weekDayTextAppearance="@style/CalendarWeekText"
+                android:focusedMonthDateColor="#DDDDDD"
+                android:unfocusedMonthDateColor="#555555"
+                android:selectedWeekBackgroundColor="#2A2A3E"
+                android:weekSeparatorLineColor="#2A2A3E" />
+
+        </LinearLayout>
     </ScrollView>
 
 </LinearLayout>

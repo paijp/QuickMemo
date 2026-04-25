@@ -6,22 +6,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.drawable.ClipDrawable
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.CalendarView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 
@@ -32,6 +29,7 @@ class MemoActivity : AppCompatActivity() {
     private lateinit var listContainer: LinearLayout
     private lateinit var keywordContainer: LinearLayout
     private lateinit var btnEditKeywords: ImageButton
+    private lateinit var calendarView: CalendarView
     private var isLocked = false
     private var sessionAddedCount = 0
 
@@ -71,6 +69,7 @@ class MemoActivity : AppCompatActivity() {
         listContainer = findViewById(R.id.listContainer)
         keywordContainer = findViewById(R.id.keywordContainer)
         btnEditKeywords = findViewById(R.id.btnEditKeywords)
+        calendarView = findViewById(R.id.calendarView)
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
@@ -166,7 +165,6 @@ class MemoActivity : AppCompatActivity() {
         if (deletable) {
             row.alpha = 0f
             row.animate().alpha(1f).setDuration(300).setStartDelay((index * 50).toLong()).start()
-
             setupLongPressDelete(row, progressBar, index)
         } else {
             progressBar.visibility = View.GONE
@@ -196,7 +194,7 @@ class MemoActivity : AppCompatActivity() {
             }
         }
 
-        row.setOnTouchListener { v, event ->
+        row.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     pressing = true

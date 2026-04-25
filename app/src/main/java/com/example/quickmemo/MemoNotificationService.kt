@@ -10,9 +10,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.os.IBinder
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import java.util.Calendar
+import java.util.Locale
 
 class MemoNotificationService : Service() {
 
@@ -28,12 +35,39 @@ class MemoNotificationService : Service() {
             manager.notify(NOTIFICATION_ID, buildNotification(context))
         }
 
+        private fun createDateIcon(context: Context): android.graphics.drawable.Icon {
+            val cal = Calendar.getInstance()
+            val dayOfMonth = cal.get(Calendar.DAY_OF_MONTH).toString()
+
+            val jpDays = arrayOf("日", "月", "火", "水", "木", "金", "土")
+            val dayOfWeek = jpDays[cal.get(Calendar.DAY_OF_WEEK) - 1]
+
+            val size = 96
+            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                textAlign = Paint.Align.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+            }
+
+            // Day of week (top)
+            paint.textSize = 30f
+            canvas.drawText(dayOfWeek, size / 2f, 32f, paint)
+
+            // Day number (bottom, larger)
+            paint.textSize = 48f
+            canvas.drawText(dayOfMonth, size / 2f, 80f, paint)
+
+            return android.graphics.drawable.Icon.createWithBitmap(bitmap)
+        }
+
         fun buildNotification(context: Context): Notification {
             val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
             val locked = km.isKeyguardLocked
             val count = MemoRepository.count(context)
 
-            // PendingIntent via BroadcastReceiver - bypasses keyguard
             val broadcastIntent = Intent(context, NotificationActionReceiver::class.java).apply {
                 action = ACTION_OPEN
             }
@@ -52,13 +86,14 @@ class MemoNotificationService : Service() {
                 }
             }
 
-            // Custom layout - tap anywhere on notification fires getBroadcast
             val remoteViews = RemoteViews(context.packageName, R.layout.notification_memo)
             remoteViews.setTextViewText(R.id.notifText, text)
             remoteViews.setOnClickPendingIntent(R.id.notifRoot, broadcastPI)
 
+            val icon = createDateIcon(context)
+
             return NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_memo)
+                .setSmallIcon(icon)
                 .setCustomContentView(remoteViews)
                 .setCustomBigContentView(remoteViews)
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
