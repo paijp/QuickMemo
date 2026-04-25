@@ -51,14 +51,16 @@ class MemoNotificationService : Service() {
                 typeface = Typeface.DEFAULT_BOLD
             }
 
-            // Day of week - top, as large as possible
-            paint.textSize = 38f
-            canvas.drawText(dayOfWeek, size / 2f, 38f, paint)
+            // Day of week - tiny, top-left corner
+            paint.textSize = 24f
+            paint.textAlign = Paint.Align.LEFT
+            canvas.drawText(dayOfWeek, 2f, 22f, paint)
 
-            // Day number - bottom, fill width
-            val numSize = if (dayOfMonth.length == 1) 58f else 50f
+            // Day number - as large as possible, centered in remaining space
+            paint.textAlign = Paint.Align.CENTER
+            val numSize = if (dayOfMonth.length == 1) 80f else 64f
             paint.textSize = numSize
-            canvas.drawText(dayOfMonth, size / 2f, 88f, paint)
+            canvas.drawText(dayOfMonth, size / 2f, 90f, paint)
 
             return IconCompat.createWithBitmap(bitmap)
         }
@@ -143,7 +145,6 @@ class MemoNotificationService : Service() {
             description = "Persistent memo notification"
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             setShowBadge(false)
-            // Disable sound/vibration for persistent notification
             setSound(null, null)
             enableVibration(false)
             enableLights(false)
