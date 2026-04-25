@@ -2,6 +2,10 @@ package com.example.quickmemo
 
 import android.app.AlertDialog
 import android.app.KeyguardManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -25,20 +29,32 @@ class MemoActivity : AppCompatActivity() {
     private var isLocked = false
     private var sessionAddedCount = 0
 
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                finish()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Show over lock screen - works on API 27+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
-        } else {
-            @Suppress("DEPRECATION")
-            window.addFlags(
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-            )
         }
+        // Also set window flags for broader compatibility (API 27 / Android 8.1)
+        @Suppress("DEPRECATION")
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+        )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        // Listen for screen off to finish activity
+        registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
 
         setContentView(R.layout.activity_memo)
 
@@ -73,6 +89,13 @@ class MemoActivity : AppCompatActivity() {
         btnEditKeywords.visibility = if (isLocked) View.GONE else View.VISIBLE
         refreshKeywords()
         refreshList()
+    }
+
+    override fun onDestroy() {
+        try {
+            unregisterReceiver(screenOffReceiver)
+        } catch (_: Exception) {}
+        super.onDestroy()
     }
 
     private fun refreshKeywords() {
