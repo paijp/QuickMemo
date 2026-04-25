@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -27,9 +29,20 @@ jobs:
     - name: Build with Gradle
       run: gradle assembleDebug
 
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
         if-no-files-found: warn
+
+    - name: Commit APK to repository
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        mkdir -p release
+        cp app/build/outputs/apk/debug/*.apk release/
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add release/
+        git diff --cached --quiet || git commit -m "Add debug APK from CI build #${{ github.run_number }}"
+        git push
