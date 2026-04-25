@@ -40,32 +40,29 @@ class MemoNotificationService : Service() {
 
             val count = MemoRepository.count(context)
 
-            return if (locked) {
-                NotificationCompat.Builder(context, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_memo)
-                    .setContentTitle("Quick Memo")
-                    .addAction(R.drawable.ic_add, "Write down what you were about to do!", openPI)
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setOngoing(true)
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                    .build()
+            val text = if (locked) {
+                context.getString(R.string.notif_locked)
             } else {
-                val label = if (count > 0) "Things to do: ${count} item(s)" else "Add a memo"
-                NotificationCompat.Builder(context, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_memo)
-                    .setContentTitle("Quick Memo")
-                    .addAction(R.drawable.ic_memo, label, openPI)
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setOngoing(true)
-                    .setPriority(NotificationCompat.PRIORITY_LOW)
-                    .build()
+                if (count > 0) {
+                    context.getString(R.string.notif_unlocked_count, count)
+                } else {
+                    context.getString(R.string.notif_unlocked_empty)
+                }
             }
+
+            return NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_memo)
+                .setContentText(text)
+                .setContentIntent(openPI)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .build()
         }
     }
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            // Update notification when screen state changes (lock/unlock)
             updateNotification(context)
         }
     }

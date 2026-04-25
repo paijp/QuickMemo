@@ -2,4 +2,23 @@
 <resources>
     <string name="app_name">Quick Memo</string>
     <string name="tile_label">Quick Memo</string>
+    <string name="notif_locked">Write down what you were about to do!</string>
+    <string name="notif_unlocked_count">Things to do: %d item(s)</string>
+    <string name="notif_unlocked_empty">Add a memo</string>
+    <string name="memo_hint">What were you about to do?</string>
+    <string name="btn_save">Save</string>
+    <string name="no_memos">No memos yet</string>
+    <string name="other_items">Other %d item(s)</string>
+    <string name="deleted">Deleted</string>
+    <string name="title_quick_memo">Quick Memo</string>
+    <string name="status_active">Lock screen memo is active</string>
+    <string name="status_inactive">Lock screen memo is inactive</string>
+    <string name="btn_enable">Enable lock screen memo</string>
+    <string name="btn_disable">Disable lock screen memo</string>
+    <string name="msg_enabled">Memo notification enabled</string>
+    <string name="msg_disabled">Memo notification disabled</string>
+    <string name="msg_notif_granted">Notification permission granted</string>
+    <string name="msg_notif_required">Notification permission is required</string>
+    <string name="desc_main">Take notes directly from your lock screen.\nEnable the persistent notification below.</string>
+    <string name="tip_tile">Tip: Add the Quick Memo tile to your Quick Settings panel for faster access.</string>
 </resources>

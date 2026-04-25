@@ -38,29 +38,29 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() { super.onResume(); updateUI() }
     private fun startMemoService() {
         ContextCompat.startForegroundService(this, Intent(this, MemoNotificationService::class.java))
-        Toast.makeText(this, "Memo notification enabled", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.msg_enabled), Toast.LENGTH_SHORT).show()
         toggleButton.postDelayed({ updateUI() }, 500)
     }
     private fun stopMemoService() {
         stopService(Intent(this, MemoNotificationService::class.java))
-        Toast.makeText(this, "Memo notification disabled", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.msg_disabled), Toast.LENGTH_SHORT).show()
         toggleButton.postDelayed({ updateUI() }, 300)
     }
     private fun updateUI() {
         if (MemoNotificationService.isRunning) {
-            statusText.text = "Lock screen memo is active"
-            toggleButton.text = "Disable lock screen memo"
+            statusText.text = getString(R.string.status_active)
+            toggleButton.text = getString(R.string.btn_disable)
         } else {
-            statusText.text = "Lock screen memo is inactive"
-            toggleButton.text = "Enable lock screen memo"
+            statusText.text = getString(R.string.status_inactive)
+            toggleButton.text = getString(R.string.btn_enable)
         }
     }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == NOTIFICATION_PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
-            else Toast.makeText(this, "Notification permission is required", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.msg_notif_granted), Toast.LENGTH_SHORT).show()
+            else Toast.makeText(this, getString(R.string.msg_notif_required), Toast.LENGTH_LONG).show()
         }
     }
 }

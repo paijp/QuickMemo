@@ -66,22 +66,20 @@ class MemoActivity : AppCompatActivity() {
         val all = MemoRepository.getAll(this)
 
         if (all.isEmpty()) {
-            addInfoRow("No memos yet")
+            addInfoRow(getString(R.string.no_memos))
             return
         }
 
         if (isLocked) {
-            // Show only items added in this session
             val showCount = sessionAddedCount.coerceAtMost(all.size)
             for (i in 0 until showCount) {
                 addMemoRow(all[i], i, false)
             }
             val hiddenCount = all.size - showCount
             if (hiddenCount > 0) {
-                addInfoRow("Other $hiddenCount item(s)")
+                addInfoRow(getString(R.string.other_items, hiddenCount))
             }
         } else {
-            // Unlocked: show all, allow long-press delete
             for (i in all.indices) {
                 addMemoRow(all[i], i, true)
             }
@@ -94,19 +92,17 @@ class MemoActivity : AppCompatActivity() {
         tv.text = text
 
         if (deletable) {
-            // Subtle animation hint: gentle pulse on first appear
             row.alpha = 0f
             row.animate().alpha(1f).setDuration(300).setStartDelay((index * 50).toLong()).start()
 
             row.setOnLongClickListener {
-                // Shake animation then remove
                 val shake = AnimationUtils.loadAnimation(this, R.anim.shake)
                 row.startAnimation(shake)
                 row.postDelayed({
                     MemoRepository.removeAt(this, index)
                     refreshList()
                     MemoNotificationService.updateNotification(this)
-                    Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.deleted), Toast.LENGTH_SHORT).show()
                 }, 400)
                 true
             }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quick Memo</string>
+    <string name="tile_label">Quick Memo</string>
+    <string name="notif_locked">やろうとしていたことを先に書いて!</string>
+    <string name="notif_unlocked_count">やろうとしたこと: %d件</string>
+    <string name="notif_unlocked_empty">メモを追加</string>
+    <string name="memo_hint">何をしようとしていた?</string>
+    <string name="btn_save">保存</string>
+    <string name="no_memos">メモはまだありません</string>
+    <string name="other_items">他%d件</string>
+    <string name="deleted">削除しました</string>
+    <string name="title_quick_memo">Quick Memo</string>
+    <string name="status_active">ロック画面メモ: 有効</string>
+    <string name="status_inactive">ロック画面メモ: 無効</string>
+    <string name="btn_enable">ロック画面メモを有効にする</string>
+    <string name="btn_disable">ロック画面メモを無効にする</string>
+    <string name="msg_enabled">メモ通知を有効にしました</string>
+    <string name="msg_disabled">メモ通知を無効にしました</string>
+    <string name="msg_notif_granted">通知の権限が許可されました</string>
+    <string name="msg_notif_required">通知の権限が必要です</string>
+    <string name="desc_main">ロック画面から直接メモを入力できます。
+下のボタンで常駐通知を有効にしてください。</string>
+    <string name="tip_tile">ヒント: クイック設定パネルにQuick Memoタイルを追加すると、さらに素早くアクセスできます。</string>
+</resources>

@@ -6,26 +6,26 @@
         android:layout_marginTop="48dp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" app:tint="#5DCAA5" />
     <TextView android:id="@+id/titleText" android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="Quick Memo" android:textColor="#FFFFFF" android:textSize="28sp" android:textStyle="bold"
+        android:text="@string/title_quick_memo" android:textColor="#FFFFFF" android:textSize="28sp" android:textStyle="bold"
         android:layout_marginTop="16dp" app:layout_constraintTop_toBottomOf="@id/appIcon"
         app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
     <TextView android:id="@+id/descText" android:layout_width="0dp" android:layout_height="wrap_content"
-        android:text="Take notes directly from your lock screen.\nEnable the persistent notification below."
+        android:text="@string/desc_main"
         android:textColor="#AAAAAA" android:textSize="15sp" android:textAlignment="center" android:lineSpacingExtra="4dp"
         android:layout_marginTop="12dp" android:layout_marginHorizontal="16dp"
         app:layout_constraintTop_toBottomOf="@id/titleText" app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
     <TextView android:id="@+id/statusText" android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:text="Lock screen memo is inactive" android:textColor="#5DCAA5" android:textSize="16sp" android:textStyle="bold"
+        android:text="@string/status_inactive" android:textColor="#5DCAA5" android:textSize="16sp" android:textStyle="bold"
         android:layout_marginTop="40dp" app:layout_constraintTop_toBottomOf="@id/descText"
         app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
     <Button android:id="@+id/toggleButton" android:layout_width="0dp" android:layout_height="56dp"
-        android:text="Enable lock screen memo" android:textColor="#1A1A2E" android:textSize="16sp" android:textAllCaps="false"
+        android:text="@string/btn_enable" android:textColor="#1A1A2E" android:textSize="16sp" android:textAllCaps="false"
         android:backgroundTint="#5DCAA5" android:layout_marginTop="24dp" android:layout_marginHorizontal="32dp"
         app:cornerRadius="16dp" app:layout_constraintTop_toBottomOf="@id/statusText"
         app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-        android:text="Tip: You can also add the Quick Memo tile to your Quick Settings panel for faster access."
+        android:text="@string/tip_tile"
         android:textColor="#666666" android:textSize="13sp" android:textAlignment="center"
         android:layout_marginTop="20dp" android:layout_marginHorizontal="24dp"
         app:layout_constraintTop_toBottomOf="@id/toggleButton"
