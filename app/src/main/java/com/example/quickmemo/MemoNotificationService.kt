@@ -14,6 +14,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.IBinder
 import android.widget.RemoteViews
@@ -47,20 +48,34 @@ class MemoNotificationService : Service() {
 
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.WHITE
-                textAlign = Paint.Align.CENTER
                 typeface = Typeface.DEFAULT_BOLD
             }
 
-            // Day of week - tiny, top-left corner
-            paint.textSize = 24f
-            paint.textAlign = Paint.Align.LEFT
-            canvas.drawText(dayOfWeek, 2f, 22f, paint)
+            // Measure and draw day number to fill the icon as much as possible
+            // Use getTextBounds to precisely center and maximize
+            val bounds = Rect()
 
-            // Day number - as large as possible, centered in remaining space
+            // Day number: find max font size that fits in ~92px width
+            var numFontSize = 92f
+            paint.textSize = numFontSize
+            paint.getTextBounds(dayOfMonth, 0, dayOfMonth.length, bounds)
+            // Scale down if wider than 90px
+            if (bounds.width() > 90) {
+                numFontSize *= 90f / bounds.width()
+                paint.textSize = numFontSize
+                paint.getTextBounds(dayOfMonth, 0, dayOfMonth.length, bounds)
+            }
+
+            // Draw number centered, pushed toward bottom
             paint.textAlign = Paint.Align.CENTER
-            val numSize = if (dayOfMonth.length == 1) 80f else 64f
-            paint.textSize = numSize
-            canvas.drawText(dayOfMonth, size / 2f, 90f, paint)
+            val numX = size / 2f
+            val numY = size - 2f  // push to very bottom
+            canvas.drawText(dayOfMonth, numX, numY, paint)
+
+            // Day of week: small, top-left, no padding
+            paint.textSize = 26f
+            paint.textAlign = Paint.Align.LEFT
+            canvas.drawText(dayOfWeek, 0f, 24f, paint)
 
             return IconCompat.createWithBitmap(bitmap)
         }
