@@ -18,8 +18,8 @@ import android.graphics.Typeface
 import android.os.IBinder
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
 import java.util.Calendar
-import java.util.Locale
 
 class MemoNotificationService : Service() {
 
@@ -35,10 +35,9 @@ class MemoNotificationService : Service() {
             manager.notify(NOTIFICATION_ID, buildNotification(context))
         }
 
-        private fun createDateIcon(context: Context): android.graphics.drawable.Icon {
+        private fun createDateIcon(): IconCompat {
             val cal = Calendar.getInstance()
             val dayOfMonth = cal.get(Calendar.DAY_OF_MONTH).toString()
-
             val jpDays = arrayOf("日", "月", "火", "水", "木", "金", "土")
             val dayOfWeek = jpDays[cal.get(Calendar.DAY_OF_WEEK) - 1]
 
@@ -52,15 +51,13 @@ class MemoNotificationService : Service() {
                 typeface = Typeface.DEFAULT_BOLD
             }
 
-            // Day of week (top)
             paint.textSize = 30f
             canvas.drawText(dayOfWeek, size / 2f, 32f, paint)
 
-            // Day number (bottom, larger)
             paint.textSize = 48f
             canvas.drawText(dayOfMonth, size / 2f, 80f, paint)
 
-            return android.graphics.drawable.Icon.createWithBitmap(bitmap)
+            return IconCompat.createWithBitmap(bitmap)
         }
 
         fun buildNotification(context: Context): Notification {
@@ -90,10 +87,8 @@ class MemoNotificationService : Service() {
             remoteViews.setTextViewText(R.id.notifText, text)
             remoteViews.setOnClickPendingIntent(R.id.notifRoot, broadcastPI)
 
-            val icon = createDateIcon(context)
-
             return NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(icon)
+                .setSmallIcon(createDateIcon())
                 .setCustomContentView(remoteViews)
                 .setCustomBigContentView(remoteViews)
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
