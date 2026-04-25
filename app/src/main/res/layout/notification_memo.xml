@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="8dp">
+    <LinearLayout android:id="@+id/memoTapArea" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:background="?android:attr/selectableItemBackground" android:padding="8dp">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_memo" android:layout_marginEnd="8dp" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="Tap to enter a memo..." android:textSize="14sp" android:textColor="?android:attr/textColorSecondary" />
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
+        <FrameLayout android:id="@+id/btnNotifNew" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+            android:layout_marginEnd="4dp" android:background="?android:attr/selectableItemBackground">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_add" android:drawablePadding="4dp" android:text="New" android:textSize="12sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </FrameLayout>
+        <FrameLayout android:id="@+id/btnNotifList" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+            android:layout_marginHorizontal="2dp" android:background="?android:attr/selectableItemBackground">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_list" android:drawablePadding="4dp" android:text="List" android:textSize="12sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </FrameLayout>
+        <FrameLayout android:id="@+id/btnNotifRemind" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+            android:layout_marginHorizontal="2dp" android:background="?android:attr/selectableItemBackground">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_clock" android:drawablePadding="4dp" android:text="Remind" android:textSize="12sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </FrameLayout>
+        <FrameLayout android:id="@+id/btnNotifPhoto" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+            android:layout_marginStart="4dp" android:background="?android:attr/selectableItemBackground">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+                android:drawableStart="@drawable/ic_photo" android:drawablePadding="4dp" android:text="Photo" android:textSize="12sp"
+                android:textColor="?android:attr/textColorPrimary" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

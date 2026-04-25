@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#1A1A2E" android:padding="20dp">
+    <TextView android:id="@+id/headerTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Quick Memo" android:textColor="#5DCAA5" android:textSize="20sp" android:textStyle="bold"
+        android:layout_marginTop="16dp" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent" />
+    <Button android:id="@+id/btnDiscard" android:layout_width="wrap_content" android:layout_height="40dp"
+        android:text="Close" android:textColor="#AAAAAA" android:textSize="14sp" android:textAllCaps="false"
+        android:backgroundTint="#2A2A3E" android:minWidth="0dp" android:paddingHorizontal="16dp" app:cornerRadius="12dp"
+        app:layout_constraintTop_toTopOf="@id/headerTitle" app:layout_constraintBottom_toBottomOf="@id/headerTitle"
+        app:layout_constraintEnd_toEndOf="parent" />
+    <EditText android:id="@+id/memoInput" android:layout_width="0dp" android:layout_height="0dp"
+        android:layout_marginTop="20dp" android:background="@drawable/bg_memo_input" android:gravity="top|start"
+        android:hint="Type your memo here..." android:textColorHint="#666666" android:textColor="#E0E0E0"
+        android:textSize="16sp" android:padding="16dp" android:inputType="textMultiLine" android:lineSpacingExtra="4dp"
+        app:layout_constraintTop_toBottomOf="@id/headerTitle" app:layout_constraintBottom_toTopOf="@id/buttonBar"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
+    <LinearLayout android:id="@+id/buttonBar" android:layout_width="0dp" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/btnSave" app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <ImageButton android:id="@+id/btnNewMemo" android:layout_width="0dp" android:layout_height="72dp"
+            android:layout_weight="1" android:layout_marginEnd="6dp" android:background="@drawable/bg_action_button_teal"
+            android:src="@drawable/ic_add" android:scaleType="center" android:contentDescription="New memo" app:tint="#5DCAA5" />
+        <ImageButton android:id="@+id/btnList" android:layout_width="0dp" android:layout_height="72dp"
+            android:layout_weight="1" android:layout_marginHorizontal="3dp" android:background="@drawable/bg_action_button_blue"
+            android:src="@drawable/ic_list" android:scaleType="center" android:contentDescription="Memo list" app:tint="#85B7EB" />
+        <ImageButton android:id="@+id/btnRemind" android:layout_width="0dp" android:layout_height="72dp"
+            android:layout_weight="1" android:layout_marginHorizontal="3dp" android:background="@drawable/bg_action_button_amber"
+            android:src="@drawable/ic_clock" android:scaleType="center" android:contentDescription="Set reminder" app:tint="#FAC775" />
+        <ImageButton android:id="@+id/btnPhoto" android:layout_width="0dp" android:layout_height="72dp"
+            android:layout_weight="1" android:layout_marginStart="6dp" android:background="@drawable/bg_action_button_coral"
+            android:src="@drawable/ic_photo" android:scaleType="center" android:contentDescription="Attach photo" app:tint="#F0997B" />
+    </LinearLayout>
+    <Button android:id="@+id/btnSave" android:layout_width="0dp" android:layout_height="52dp"
+        android:text="Save memo" android:textColor="#1A1A2E" android:textSize="16sp" android:textAllCaps="false"
+        android:backgroundTint="#5DCAA5" android:layout_marginBottom="16dp" app:cornerRadius="14dp"
+        app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
