@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
@@ -32,8 +33,7 @@ class MemoNotificationService : Service() {
             val locked = km.isKeyguardLocked
             val count = MemoRepository.count(context)
 
-            // Use PendingIntent.getBroadcast -> NotificationActionReceiver -> startActivity
-            // This is the same pattern as the first build's "New" button that worked on 8.1
+            // PendingIntent via BroadcastReceiver - bypasses keyguard
             val broadcastIntent = Intent(context, NotificationActionReceiver::class.java).apply {
                 action = ACTION_OPEN
             }
@@ -42,7 +42,7 @@ class MemoNotificationService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val actionLabel = if (locked) {
+            val text = if (locked) {
                 context.getString(R.string.notif_locked)
             } else {
                 if (count > 0) {
@@ -52,13 +52,21 @@ class MemoNotificationService : Service() {
                 }
             }
 
-            return NotificationCompat.Builder(context, CHANNEL_ID)
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_memo)
-                .addAction(R.drawable.ic_add, actionLabel, broadcastPI)
+                .setContentText(text)
+                .setContentIntent(broadcastPI)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build()
+
+            // On older Android (< API 31), action buttons require expanding
+            // Add action button as fallback for older devices
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                builder.addAction(R.drawable.ic_add, text, broadcastPI)
+            }
+
+            return builder.build()
         }
     }
 
