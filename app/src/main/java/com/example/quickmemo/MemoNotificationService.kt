@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 
 class MemoNotificationService : Service() {
@@ -32,6 +33,7 @@ class MemoNotificationService : Service() {
             val locked = km.isKeyguardLocked
             val count = MemoRepository.count(context)
 
+            // PendingIntent via BroadcastReceiver - bypasses keyguard
             val broadcastIntent = Intent(context, NotificationActionReceiver::class.java).apply {
                 action = ACTION_OPEN
             }
@@ -40,7 +42,7 @@ class MemoNotificationService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val actionLabel = if (locked) {
+            val text = if (locked) {
                 context.getString(R.string.notif_locked)
             } else {
                 if (count > 0) {
@@ -50,11 +52,16 @@ class MemoNotificationService : Service() {
                 }
             }
 
-            // No contentIntent - only addAction with getBroadcast
-            // contentIntent causes keyguard check even on addAction taps on some devices
+            // Custom layout - tap anywhere on notification fires getBroadcast
+            val remoteViews = RemoteViews(context.packageName, R.layout.notification_memo)
+            remoteViews.setTextViewText(R.id.notifText, text)
+            remoteViews.setOnClickPendingIntent(R.id.notifRoot, broadcastPI)
+
             return NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_memo)
-                .addAction(R.drawable.ic_add, actionLabel, broadcastPI)
+                .setCustomContentView(remoteViews)
+                .setCustomBigContentView(remoteViews)
+                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
