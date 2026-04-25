@@ -6,13 +6,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.drawable.ClipDrawable
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -29,6 +35,11 @@ class MemoActivity : AppCompatActivity() {
     private var isLocked = false
     private var sessionAddedCount = 0
 
+    companion object {
+        private const val LONG_PRESS_DURATION = 600L
+        private const val PROGRESS_INTERVAL = 16L
+    }
+
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == Intent.ACTION_SCREEN_OFF) {
@@ -40,12 +51,10 @@ class MemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Show over lock screen - works on API 27+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         }
-        // Also set window flags for broader compatibility (API 27 / Android 8.1)
         @Suppress("DEPRECATION")
         window.addFlags(
             WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
@@ -53,7 +62,6 @@ class MemoActivity : AppCompatActivity() {
         )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Listen for screen off to finish activity
         registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
 
         setContentView(R.layout.activity_memo)
@@ -78,7 +86,6 @@ class MemoActivity : AppCompatActivity() {
         }
 
         btnEditKeywords.setOnClickListener { showEditKeywordsDialog() }
-
         memoInput.requestFocus()
     }
 
@@ -92,9 +99,7 @@ class MemoActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        try {
-            unregisterReceiver(screenOffReceiver)
-        } catch (_: Exception) {}
+        try { unregisterReceiver(screenOffReceiver) } catch (_: Exception) {}
         super.onDestroy()
     }
 
@@ -113,12 +118,10 @@ class MemoActivity : AppCompatActivity() {
                 minWidth = 0
                 minimumWidth = 0
                 isAllCaps = false
-                val lp = LinearLayout.LayoutParams(
+                layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                lp.marginEnd = 8
-                layoutParams = lp
+                ).apply { marginEnd = 8 }
             }
             btn.setOnClickListener {
                 val start = memoInput.selectionStart.coerceAtLeast(0)
@@ -157,36 +160,78 @@ class MemoActivity : AppCompatActivity() {
     private fun addMemoRow(text: String, index: Int, deletable: Boolean) {
         val row = layoutInflater.inflate(R.layout.item_memo, listContainer, false)
         val tv = row.findViewById<TextView>(R.id.memoText)
+        val progressBar = row.findViewById<View>(R.id.progressBar)
         tv.text = text
 
         if (deletable) {
             row.alpha = 0f
             row.animate().alpha(1f).setDuration(300).setStartDelay((index * 50).toLong()).start()
 
-            row.setOnLongClickListener {
-                val shake = AnimationUtils.loadAnimation(this, R.anim.shake)
-                row.startAnimation(shake)
-                row.postDelayed({
-                    val deletedText = MemoRepository.getAll(this).getOrNull(index) ?: return@postDelayed
-                    val deletedIndex = index
-                    MemoRepository.removeAt(this, deletedIndex)
-                    refreshList()
-                    MemoNotificationService.updateNotification(this)
-
-                    Snackbar.make(rootView, getString(R.string.deleted), Snackbar.LENGTH_LONG)
-                        .setAction(getString(R.string.btn_undo)) {
-                            MemoRepository.insertAt(this, deletedIndex, deletedText)
-                            refreshList()
-                            MemoNotificationService.updateNotification(this)
-                        }
-                        .setActionTextColor(0xFF5DCAA5.toInt())
-                        .show()
-                }, 400)
-                true
-            }
+            setupLongPressDelete(row, progressBar, index)
+        } else {
+            progressBar.visibility = View.GONE
         }
 
         listContainer.addView(row)
+    }
+
+    private fun setupLongPressDelete(row: View, progressBar: View, index: Int) {
+        val handler = Handler(Looper.getMainLooper())
+        var pressing = false
+        var elapsed = 0L
+
+        val progressRunnable = object : Runnable {
+            override fun run() {
+                if (!pressing) return
+                elapsed += PROGRESS_INTERVAL
+                val fraction = (elapsed.toFloat() / LONG_PRESS_DURATION).coerceAtMost(1f)
+                progressBar.scaleX = fraction
+                if (elapsed >= LONG_PRESS_DURATION) {
+                    pressing = false
+                    progressBar.scaleX = 0f
+                    performDelete(index)
+                } else {
+                    handler.postDelayed(this, PROGRESS_INTERVAL)
+                }
+            }
+        }
+
+        row.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    pressing = true
+                    elapsed = 0L
+                    progressBar.visibility = View.VISIBLE
+                    progressBar.scaleX = 0f
+                    handler.postDelayed(progressRunnable, PROGRESS_INTERVAL)
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    pressing = false
+                    elapsed = 0L
+                    progressBar.scaleX = 0f
+                    handler.removeCallbacks(progressRunnable)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun performDelete(index: Int) {
+        val deletedText = MemoRepository.getAll(this).getOrNull(index) ?: return
+        MemoRepository.removeAt(this, index)
+        refreshList()
+        MemoNotificationService.updateNotification(this)
+
+        Snackbar.make(rootView, getString(R.string.deleted), Snackbar.LENGTH_LONG)
+            .setAction(getString(R.string.btn_undo)) {
+                MemoRepository.insertAt(this, index, deletedText)
+                refreshList()
+                MemoNotificationService.updateNotification(this)
+            }
+            .setActionTextColor(0xFF5DCAA5.toInt())
+            .show()
     }
 
     private fun addInfoRow(text: String) {
@@ -212,12 +257,11 @@ class MemoActivity : AppCompatActivity() {
             .setTitle(getString(R.string.keyword_edit_title))
             .setView(input)
             .setPositiveButton(getString(R.string.btn_save)) { _, _ ->
-                val text = input.text.toString()
-                val newList = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                val t = input.text.toString()
+                val newList = t.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                 if (newList.isNotEmpty()) {
                     KeywordRepository.save(this, newList)
                     refreshKeywords()
-
                     Snackbar.make(rootView, getString(R.string.keywords_changed), Snackbar.LENGTH_LONG)
                         .setAction(getString(R.string.btn_undo)) {
                             KeywordRepository.save(this, oldKeywords)

@@ -1,26 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:background="@drawable/bg_memo_item"
-    android:paddingHorizontal="14dp"
-    android:paddingVertical="14dp"
     android:layout_marginTop="6dp">
 
-    <View
-        android:layout_width="4dp"
-        android:layout_height="4dp"
-        android:background="#5DCAA5"
-        android:layout_marginEnd="12dp" />
-
-    <TextView
-        android:id="@+id/memoText"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="#DDDDDD"
-        android:textSize="15sp"
-        android:lineSpacingExtra="2dp" />
-</LinearLayout>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_memo_item"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="14dp">
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:background="#5DCAA5"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:id="@+id/memoText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#DDDDDD"
+            android:textSize="15sp"
+            android:lineSpacingExtra="2dp" />
+    </LinearLayout>
+
+    <!-- Progress bar: grows left to right on long press -->
+    <View
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_gravity="bottom"
+        android:background="#E05050"
+        android:scaleX="0"
+        android:transformPivotX="0dp"
+        android:visibility="gone" />
+
+</FrameLayout>

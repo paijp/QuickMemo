@@ -18,6 +18,7 @@ class MemoNotificationService : Service() {
     companion object {
         const val CHANNEL_ID = "quick_memo_channel"
         const val NOTIFICATION_ID = 1001
+        const val ACTION_OPEN = "com.example.quickmemo.ACTION_OPEN"
         var isRunning = false; private set
 
         fun updateNotification(context: Context) {
@@ -29,16 +30,16 @@ class MemoNotificationService : Service() {
         fun buildNotification(context: Context): Notification {
             val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
             val locked = km.isKeyguardLocked
+            val count = MemoRepository.count(context)
 
-            val openIntent = Intent(context, MemoActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            // Use BroadcastReceiver to launch activity - bypasses keyguard on Android 8.x
+            val launchIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+                action = ACTION_OPEN
             }
-            val openPI = PendingIntent.getActivity(
-                context, 0, openIntent,
+            val launchPI = PendingIntent.getBroadcast(
+                context, 0, launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-
-            val count = MemoRepository.count(context)
 
             val text = if (locked) {
                 context.getString(R.string.notif_locked)
@@ -50,17 +51,14 @@ class MemoNotificationService : Service() {
                 }
             }
 
-            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            return NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_memo)
                 .setContentText(text)
-                .setContentIntent(openPI)
-                .setFullScreenIntent(openPI, true)
+                .setContentIntent(launchPI)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-
-            return builder.build()
+                .build()
         }
     }
 
