@@ -51,11 +51,14 @@ class MemoNotificationService : Service() {
                 typeface = Typeface.DEFAULT_BOLD
             }
 
-            paint.textSize = 30f
-            canvas.drawText(dayOfWeek, size / 2f, 32f, paint)
+            // Day of week - top, as large as possible
+            paint.textSize = 38f
+            canvas.drawText(dayOfWeek, size / 2f, 38f, paint)
 
-            paint.textSize = 48f
-            canvas.drawText(dayOfMonth, size / 2f, 80f, paint)
+            // Day number - bottom, fill width
+            val numSize = if (dayOfMonth.length == 1) 58f else 50f
+            paint.textSize = numSize
+            canvas.drawText(dayOfMonth, size / 2f, 88f, paint)
 
             return IconCompat.createWithBitmap(bitmap)
         }
@@ -94,7 +97,10 @@ class MemoNotificationService : Service() {
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setWhen(Long.MAX_VALUE)
+                .setSortKey("0")
+                .setShowWhen(false)
                 .build()
         }
     }
@@ -132,11 +138,15 @@ class MemoNotificationService : Service() {
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
-            CHANNEL_ID, "Quick Memo", NotificationManager.IMPORTANCE_LOW
+            CHANNEL_ID, "Quick Memo", NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Persistent memo notification"
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             setShowBadge(false)
+            // Disable sound/vibration for persistent notification
+            setSound(null, null)
+            enableVibration(false)
+            enableLights(false)
         }
         (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
             .createNotificationChannel(channel)
