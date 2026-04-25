@@ -4,21 +4,20 @@ import android.app.AlertDialog
 import android.app.KeyguardManager
 import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
-import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
 
 class MemoActivity : AppCompatActivity() {
 
+    private lateinit var rootView: View
     private lateinit var memoInput: EditText
     private lateinit var listContainer: LinearLayout
     private lateinit var keywordContainer: LinearLayout
@@ -43,6 +42,7 @@ class MemoActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_memo)
 
+        rootView = findViewById(android.R.id.content)
         memoInput = findViewById(R.id.memoInput)
         listContainer = findViewById(R.id.listContainer)
         keywordContainer = findViewById(R.id.keywordContainer)
@@ -70,7 +70,7 @@ class MemoActivity : AppCompatActivity() {
         super.onResume()
         val km = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
         isLocked = km.isKeyguardLocked
-        btnEditKeywords.visibility = if (isLocked) android.view.View.GONE else android.view.View.VISIBLE
+        btnEditKeywords.visibility = if (isLocked) View.GONE else View.VISIBLE
         refreshKeywords()
         refreshList()
     }
@@ -144,10 +144,20 @@ class MemoActivity : AppCompatActivity() {
                 val shake = AnimationUtils.loadAnimation(this, R.anim.shake)
                 row.startAnimation(shake)
                 row.postDelayed({
-                    MemoRepository.removeAt(this, index)
+                    val deletedText = MemoRepository.getAll(this).getOrNull(index) ?: return@postDelayed
+                    val deletedIndex = index
+                    MemoRepository.removeAt(this, deletedIndex)
                     refreshList()
                     MemoNotificationService.updateNotification(this)
-                    Toast.makeText(this, getString(R.string.deleted), Toast.LENGTH_SHORT).show()
+
+                    Snackbar.make(rootView, getString(R.string.deleted), Snackbar.LENGTH_LONG)
+                        .setAction(getString(R.string.btn_undo)) {
+                            MemoRepository.insertAt(this, deletedIndex, deletedText)
+                            refreshList()
+                            MemoNotificationService.updateNotification(this)
+                        }
+                        .setActionTextColor(0xFF5DCAA5.toInt())
+                        .show()
                 }, 400)
                 true
             }
@@ -167,9 +177,9 @@ class MemoActivity : AppCompatActivity() {
     }
 
     private fun showEditKeywordsDialog() {
-        val current = KeywordRepository.getAll(this)
+        val oldKeywords = KeywordRepository.getAll(this)
         val input = EditText(this).apply {
-            setText(current.joinToString(", "))
+            setText(oldKeywords.joinToString(", "))
             hint = getString(R.string.keyword_edit_hint)
             setTextColor(0xFF222222.toInt())
             textSize = 15f
@@ -180,10 +190,18 @@ class MemoActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton(getString(R.string.btn_save)) { _, _ ->
                 val text = input.text.toString()
-                val list = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                if (list.isNotEmpty()) {
-                    KeywordRepository.save(this, list)
+                val newList = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                if (newList.isNotEmpty()) {
+                    KeywordRepository.save(this, newList)
                     refreshKeywords()
+
+                    Snackbar.make(rootView, getString(R.string.keywords_changed), Snackbar.LENGTH_LONG)
+                        .setAction(getString(R.string.btn_undo)) {
+                            KeywordRepository.save(this, oldKeywords)
+                            refreshKeywords()
+                        }
+                        .setActionTextColor(0xFF5DCAA5.toInt())
+                        .show()
                 }
             }
             .setNegativeButton(getString(R.string.btn_cancel), null)

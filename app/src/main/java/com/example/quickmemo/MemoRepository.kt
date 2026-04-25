@@ -24,6 +24,13 @@ object MemoRepository {
         save(context, list)
     }
 
+    fun insertAt(context: Context, index: Int, memo: String) {
+        val list = getAll(context)
+        val safeIndex = index.coerceIn(0, list.size)
+        list.add(safeIndex, memo)
+        save(context, list)
+    }
+
     fun removeAt(context: Context, index: Int) {
         val list = getAll(context)
         if (index in list.indices) {

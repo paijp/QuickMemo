@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Quick Memo</string>
+    <string name="app_name">通知を見てしまい、やろうとしたことを忘れたことはありますか</string>
     <string name="tile_label">Quick Memo</string>
-    <string name="notif_locked">やろうとしていたことを先に書いて!</string>
+    <string name="notif_locked">やろうとしたことを先に書いて!</string>
     <string name="notif_unlocked_count">やろうとしたこと: %d件</string>
     <string name="notif_unlocked_empty">メモを追加</string>
     <string name="memo_hint">何をしようとしていた?</string>
     <string name="btn_save">保存</string>
     <string name="btn_cancel">キャンセル</string>
+    <string name="btn_undo">元に戻す</string>
     <string name="no_memos">メモはまだありません</string>
     <string name="other_items">他%d件</string>
     <string name="deleted">削除しました</string>
+    <string name="keywords_changed">キーワードを変更しました</string>
+    <string name="undone">元に戻しました</string>
     <string name="title_quick_memo">Quick Memo</string>
     <string name="status_active">ロック画面メモ: 有効</string>
     <string name="status_inactive">ロック画面メモ: 無効</string>
