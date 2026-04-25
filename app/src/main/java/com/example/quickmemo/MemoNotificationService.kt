@@ -14,7 +14,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.IBinder
 import android.widget.RemoteViews
@@ -36,48 +35,69 @@ class MemoNotificationService : Service() {
             manager.notify(NOTIFICATION_ID, buildNotification(context))
         }
 
+        private fun trimBitmap(src: Bitmap): Bitmap {
+            val width = src.width
+            val height = src.height
+            val pixels = IntArray(width * height)
+            src.getPixels(pixels, 0, width, 0, 0, width, height)
+
+            var top = height
+            var bottom = 0
+            var left = width
+            var right = 0
+
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    if (pixels[y * width + x] ushr 24 != 0) {
+                        if (y < top) top = y
+                        if (y > bottom) bottom = y
+                        if (x < left) left = x
+                        if (x > right) right = x
+                    }
+                }
+            }
+
+            if (top > bottom || left > right) return src
+
+            val trimmed = Bitmap.createBitmap(src, left, top, right - left + 1, bottom - top + 1)
+
+            // Make it square (status bar icons must be square)
+            val size = maxOf(trimmed.width, trimmed.height)
+            val square = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(square)
+            val offsetX = (size - trimmed.width) / 2f
+            val offsetY = (size - trimmed.height) / 2f
+            canvas.drawBitmap(trimmed, offsetX, offsetY, null)
+            return square
+        }
+
         private fun createDateIcon(): IconCompat {
             val cal = Calendar.getInstance()
             val dayOfMonth = cal.get(Calendar.DAY_OF_MONTH).toString()
             val jpDays = arrayOf("日", "月", "火", "水", "木", "金", "土")
             val dayOfWeek = jpDays[cal.get(Calendar.DAY_OF_WEEK) - 1]
 
-            val size = 96
+            val size = 192
             val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
 
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.WHITE
+                textAlign = Paint.Align.CENTER
                 typeface = Typeface.DEFAULT_BOLD
             }
 
-            // Measure and draw day number to fill the icon as much as possible
-            // Use getTextBounds to precisely center and maximize
-            val bounds = Rect()
-
-            // Day number: find max font size that fits in ~92px width
-            var numFontSize = 92f
-            paint.textSize = numFontSize
-            paint.getTextBounds(dayOfMonth, 0, dayOfMonth.length, bounds)
-            // Scale down if wider than 90px
-            if (bounds.width() > 90) {
-                numFontSize *= 90f / bounds.width()
-                paint.textSize = numFontSize
-                paint.getTextBounds(dayOfMonth, 0, dayOfMonth.length, bounds)
-            }
-
-            // Draw number centered, pushed toward bottom
-            paint.textAlign = Paint.Align.CENTER
-            val numX = size / 2f
-            val numY = size - 2f  // push to very bottom
-            canvas.drawText(dayOfMonth, numX, numY, paint)
-
-            // Day of week: small, top-left, no padding
-            paint.textSize = 26f
+            // Day of week - small, top-left
+            paint.textSize = 48f
             paint.textAlign = Paint.Align.LEFT
-            canvas.drawText(dayOfWeek, 0f, 24f, paint)
+            canvas.drawText(dayOfWeek, 4f, 44f, paint)
 
-            return IconCompat.createWithBitmap(bitmap)
+            // Day number - as large as possible
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = if (dayOfMonth.length == 1) 160f else 128f
+            canvas.drawText(dayOfMonth, size / 2f, 176f, paint)
+
+            return IconCompat.createWithBitmap(trimBitmap(bitmap))
         }
 
         fun buildNotification(context: Context): Notification {

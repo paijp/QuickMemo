@@ -142,9 +142,9 @@
                 android:layout_height="1dp"
                 android:background="#2A2A3E"
                 android:layout_marginHorizontal="16dp"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="4dp" />
 
-            <!-- Calendar (display only) -->
+            <!-- Calendar (display only, compact) -->
             <CalendarView
                 android:id="@+id/calendarView"
                 android:layout_width="match_parent"
@@ -156,7 +156,9 @@
                 android:focusedMonthDateColor="#DDDDDD"
                 android:unfocusedMonthDateColor="#555555"
                 android:selectedWeekBackgroundColor="#2A2A3E"
-                android:weekSeparatorLineColor="#2A2A3E" />
+                android:weekSeparatorLineColor="#2A2A3E"
+                android:scaleY="0.85"
+                android:transformPivotY="0dp" />
 
         </LinearLayout>
     </ScrollView>
