@@ -50,14 +50,17 @@ class MemoNotificationService : Service() {
                 }
             }
 
-            return NotificationCompat.Builder(context, CHANNEL_ID)
+            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_memo)
                 .setContentText(text)
                 .setContentIntent(openPI)
+                .setFullScreenIntent(openPI, true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build()
+
+            return builder.build()
         }
     }
 
