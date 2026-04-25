@@ -18,6 +18,7 @@ class MemoNotificationService : Service() {
     companion object {
         const val CHANNEL_ID = "quick_memo_channel"
         const val NOTIFICATION_ID = 1001
+        const val ACTION_OPEN = "com.example.quickmemo.ACTION_OPEN"
         var isRunning = false; private set
 
         fun updateNotification(context: Context) {
@@ -31,11 +32,13 @@ class MemoNotificationService : Service() {
             val locked = km.isKeyguardLocked
             val count = MemoRepository.count(context)
 
-            val openIntent = Intent(context, MemoActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            // Use PendingIntent.getBroadcast -> NotificationActionReceiver -> startActivity
+            // This is the same pattern as the first build's "New" button that worked on 8.1
+            val broadcastIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+                action = ACTION_OPEN
             }
-            val openPI = PendingIntent.getActivity(
-                context, 0, openIntent,
+            val broadcastPI = PendingIntent.getBroadcast(
+                context, 0, broadcastIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
@@ -51,7 +54,7 @@ class MemoNotificationService : Service() {
 
             return NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_memo)
-                .addAction(R.drawable.ic_add, actionLabel, openPI)
+                .addAction(R.drawable.ic_add, actionLabel, broadcastPI)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
