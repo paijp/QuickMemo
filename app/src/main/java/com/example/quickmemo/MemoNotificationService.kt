@@ -14,6 +14,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.IBinder
 import android.widget.RemoteViews
@@ -36,39 +37,59 @@ class MemoNotificationService : Service() {
         }
 
         private fun trimBitmap(src: Bitmap): Bitmap {
-            val width = src.width
-            val height = src.height
-            val pixels = IntArray(width * height)
-            src.getPixels(pixels, 0, width, 0, 0, width, height)
+            val w = src.width
+            val h = src.height
+            var top = 0
+            var bottom = h - 1
+            var left = 0
+            var right = w - 1
 
-            var top = height
-            var bottom = 0
-            var left = width
-            var right = 0
-
-            for (y in 0 until height) {
-                for (x in 0 until width) {
-                    if (pixels[y * width + x] ushr 24 != 0) {
-                        if (y < top) top = y
-                        if (y > bottom) bottom = y
-                        if (x < left) left = x
-                        if (x > right) right = x
-                    }
+            // Find top
+            outer@ for (y in 0 until h) {
+                for (x in 0 until w) {
+                    if (src.getPixel(x, y) != Color.TRANSPARENT) { top = y; break@outer }
+                }
+            }
+            // Find bottom
+            outer@ for (y in h - 1 downTo 0) {
+                for (x in 0 until w) {
+                    if (src.getPixel(x, y) != Color.TRANSPARENT) { bottom = y; break@outer }
+                }
+            }
+            // Find left
+            outer@ for (x in 0 until w) {
+                for (y in 0 until h) {
+                    if (src.getPixel(x, y) != Color.TRANSPARENT) { left = x; break@outer }
+                }
+            }
+            // Find right
+            outer@ for (x in w - 1 downTo 0) {
+                for (y in 0 until h) {
+                    if (src.getPixel(x, y) != Color.TRANSPARENT) { right = x; break@outer }
                 }
             }
 
-            if (top > bottom || left > right) return src
+            val trimW = right - left + 1
+            val trimH = bottom - top + 1
+            if (trimW <= 0 || trimH <= 0) return src
+            return Bitmap.createBitmap(src, left, top, trimW, trimH)
+        }
 
-            val trimmed = Bitmap.createBitmap(src, left, top, right - left + 1, bottom - top + 1)
-
-            // Make it square (status bar icons must be square)
-            val size = maxOf(trimmed.width, trimmed.height)
-            val square = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(square)
-            val offsetX = (size - trimmed.width) / 2f
-            val offsetY = (size - trimmed.height) / 2f
-            canvas.drawBitmap(trimmed, offsetX, offsetY, null)
-            return square
+        private fun renderText(text: String, textSize: Float): Bitmap {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                this.textSize = textSize
+                typeface = Typeface.DEFAULT_BOLD
+                textAlign = Paint.Align.LEFT
+            }
+            val bounds = Rect()
+            paint.getTextBounds(text, 0, text.length, bounds)
+            val w = (bounds.width() + 4).coerceAtLeast(1)
+            val h = (bounds.height() + 4).coerceAtLeast(1)
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            canvas.drawText(text, -bounds.left.toFloat() + 2, -bounds.top.toFloat() + 2, paint)
+            return trimBitmap(bmp)
         }
 
         private fun createDateIcon(): IconCompat {
@@ -77,27 +98,41 @@ class MemoNotificationService : Service() {
             val jpDays = arrayOf("日", "月", "火", "水", "木", "金", "土")
             val dayOfWeek = jpDays[cal.get(Calendar.DAY_OF_WEEK) - 1]
 
-            val size = 192
-            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
+            // Render each part at large size, trim, then combine
+            val weekBmp = renderText(dayOfWeek, 80f)
+            val dayBmp = renderText(dayOfMonth, 120f)
 
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.WHITE
-                textAlign = Paint.Align.CENTER
-                typeface = Typeface.DEFAULT_BOLD
-            }
+            // Target: 96x96 icon, stack vertically with no gap
+            val totalH = weekBmp.height + dayBmp.height
+            val maxW = maxOf(weekBmp.width, dayBmp.width)
 
-            // Day of week - small, top-left
-            paint.textSize = 48f
-            paint.textAlign = Paint.Align.LEFT
-            canvas.drawText(dayOfWeek, 4f, 44f, paint)
+            // Scale to fit in 96x96
+            val scale = minOf(96f / maxW, 96f / totalH)
+            val sWeekW = (weekBmp.width * scale).toInt().coerceAtLeast(1)
+            val sWeekH = (weekBmp.height * scale).toInt().coerceAtLeast(1)
+            val sDayW = (dayBmp.width * scale).toInt().coerceAtLeast(1)
+            val sDayH = (dayBmp.height * scale).toInt().coerceAtLeast(1)
 
-            // Day number - as large as possible
-            paint.textAlign = Paint.Align.CENTER
-            paint.textSize = if (dayOfMonth.length == 1) 160f else 128f
-            canvas.drawText(dayOfMonth, size / 2f, 176f, paint)
+            val scaledWeek = Bitmap.createScaledBitmap(weekBmp, sWeekW, sWeekH, true)
+            val scaledDay = Bitmap.createScaledBitmap(dayBmp, sDayW, sDayH, true)
 
-            return IconCompat.createWithBitmap(trimBitmap(bitmap))
+            val outSize = 96
+            val result = Bitmap.createBitmap(outSize, outSize, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(result)
+
+            val combinedH = sWeekH + sDayH
+            val yOffset = (outSize - combinedH) / 2f
+
+            // Center each horizontally
+            canvas.drawBitmap(scaledWeek, (outSize - sWeekW) / 2f, yOffset, null)
+            canvas.drawBitmap(scaledDay, (outSize - sDayW) / 2f, yOffset + sWeekH, null)
+
+            weekBmp.recycle()
+            dayBmp.recycle()
+            scaledWeek.recycle()
+            scaledDay.recycle()
+
+            return IconCompat.createWithBitmap(result)
         }
 
         fun buildNotification(context: Context): Notification {
