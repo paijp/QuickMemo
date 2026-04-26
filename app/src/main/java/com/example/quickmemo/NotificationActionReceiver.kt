@@ -11,16 +11,21 @@ class NotificationActionReceiver : BroadcastReceiver() {
         if (intent.action == MemoNotificationService.ACTION_OPEN) {
             val pending = goAsync()
             val handler = Handler(Looper.getMainLooper())
+
+            // Close notification panel (works on Android 11 and below)
+            @Suppress("DEPRECATION")
+            try {
+                context.sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+            } catch (_: Exception) {}
+
             val memoIntent = Intent(context, MemoActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
                         Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             }
 
-            // Try immediately
             context.startActivity(memoIntent)
 
-            // Retry after short delay in case first attempt was blocked
             handler.postDelayed({
                 try {
                     context.startActivity(memoIntent)
