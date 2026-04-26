@@ -18,7 +18,6 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.CalendarView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 
@@ -29,7 +28,6 @@ class MemoActivity : AppCompatActivity() {
     private lateinit var listContainer: LinearLayout
     private lateinit var keywordContainer: LinearLayout
     private lateinit var btnEditKeywords: ImageButton
-    private lateinit var calendarView: CalendarView
     private var isLocked = false
     private var sessionAddedCount = 0
 
@@ -69,7 +67,6 @@ class MemoActivity : AppCompatActivity() {
         listContainer = findViewById(R.id.listContainer)
         keywordContainer = findViewById(R.id.keywordContainer)
         btnEditKeywords = findViewById(R.id.btnEditKeywords)
-        calendarView = findViewById(R.id.calendarView)
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
