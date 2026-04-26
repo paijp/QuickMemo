@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Have you ever forgotten what you were about to do after checking a notification?</string>
+    <string name="app_name">Pick up phone→notice notification→respond→forget why you picked it up - solved</string>
     <string name="tile_label">Quick Memo</string>
     <string name="notif_locked">Write down what you were about to do first!</string>
     <string name="notif_unlocked_count">Things to do: %d item(s)</string>
@@ -26,5 +26,5 @@
     <string name="desc_main">Take notes directly from your lock screen.\nEnable the persistent notification below.</string>
     <string name="tip_tile">Tip: Add the Quick Memo tile to your Quick Settings panel for faster access.</string>
     <string name="keyword_edit_title">Edit keywords</string>
-    <string name="keyword_edit_hint">Comma separated (e.g. web, buy, call)</string>
+    <string name="keyword_edit_hint">Comma separated (e.g. phone, buy, call)</string>
 </resources>

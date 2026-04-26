@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">通知を見てしまい、やろうとしたことを忘れたことはありますか</string>
+    <string name="app_name">スマホを持つ→通知に気づく→対応→なんでスマホを取ったか忘れる-を解消</string>
     <string name="tile_label">Quick Memo</string>
     <string name="notif_locked">やろうとしたことを先に書いて!</string>
     <string name="notif_unlocked_count">やろうとしたこと: %d件</string>
@@ -27,5 +27,5 @@
 下のボタンで常駐通知を有効にしてください。</string>
     <string name="tip_tile">ヒント: クイック設定パネルにQuick Memoタイルを追加すると、さらに素早くアクセスできます。</string>
     <string name="keyword_edit_title">キーワードの編集</string>
-    <string name="keyword_edit_hint">カンマ区切りで入力 (例: web, 買う, 連絡)</string>
+    <string name="keyword_edit_hint">カンマ区切りで入力 (例: 電話, 買う, 連絡)</string>
 </resources>
