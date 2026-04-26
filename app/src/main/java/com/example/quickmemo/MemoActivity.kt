@@ -28,6 +28,7 @@ class MemoActivity : AppCompatActivity() {
     private lateinit var listContainer: LinearLayout
     private lateinit var keywordContainer: LinearLayout
     private lateinit var btnEditKeywords: ImageButton
+    private lateinit var calendarView: CompactCalendarView
     private var isLocked = false
     private var sessionAddedCount = 0
 
@@ -38,9 +39,7 @@ class MemoActivity : AppCompatActivity() {
 
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == Intent.ACTION_SCREEN_OFF) {
-                finish()
-            }
+            if (intent.action == Intent.ACTION_SCREEN_OFF) finish()
         }
     }
 
@@ -67,6 +66,7 @@ class MemoActivity : AppCompatActivity() {
         listContainer = findViewById(R.id.listContainer)
         keywordContainer = findViewById(R.id.keywordContainer)
         btnEditKeywords = findViewById(R.id.btnEditKeywords)
+        calendarView = findViewById(R.id.calendarView)
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
@@ -83,6 +83,11 @@ class MemoActivity : AppCompatActivity() {
 
         btnEditKeywords.setOnClickListener { showEditKeywordsDialog() }
         memoInput.requestFocus()
+
+        // Fetch holidays in background
+        HolidayRepository.fetchIfNeeded(this) {
+            calendarView.refreshHolidays()
+        }
     }
 
     override fun onResume() {
@@ -139,17 +144,11 @@ class MemoActivity : AppCompatActivity() {
 
         if (isLocked) {
             val showCount = sessionAddedCount.coerceAtMost(all.size)
-            for (i in 0 until showCount) {
-                addMemoRow(all[i], i, false)
-            }
+            for (i in 0 until showCount) addMemoRow(all[i], i, false)
             val hiddenCount = all.size - showCount
-            if (hiddenCount > 0) {
-                addInfoRow(getString(R.string.other_items, hiddenCount))
-            }
+            if (hiddenCount > 0) addInfoRow(getString(R.string.other_items, hiddenCount))
         } else {
-            for (i in all.indices) {
-                addMemoRow(all[i], i, true)
-            }
+            for (i in all.indices) addMemoRow(all[i], i, true)
         }
     }
 
@@ -194,19 +193,13 @@ class MemoActivity : AppCompatActivity() {
         row.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    pressing = true
-                    elapsed = 0L
-                    progressBar.visibility = View.VISIBLE
-                    progressBar.scaleX = 0f
-                    handler.postDelayed(progressRunnable, PROGRESS_INTERVAL)
-                    true
+                    pressing = true; elapsed = 0L
+                    progressBar.visibility = View.VISIBLE; progressBar.scaleX = 0f
+                    handler.postDelayed(progressRunnable, PROGRESS_INTERVAL); true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    pressing = false
-                    elapsed = 0L
-                    progressBar.scaleX = 0f
-                    handler.removeCallbacks(progressRunnable)
-                    true
+                    pressing = false; elapsed = 0L; progressBar.scaleX = 0f
+                    handler.removeCallbacks(progressRunnable); true
                 }
                 else -> false
             }

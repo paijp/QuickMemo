@@ -3,8 +3,8 @@ package com.example.quickmemo
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.RectF
 import android.util.AttributeSet
+import android.graphics.RectF
 import android.view.MotionEvent
 import android.view.View
 import java.util.Calendar
@@ -30,6 +30,10 @@ class CompactCalendarView @JvmOverloads constructor(
 
     private val leftArrowRect = RectF()
     private val rightArrowRect = RectF()
+
+    fun refreshHolidays() {
+        invalidate()
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val w = MeasureSpec.getSize(widthMeasureSpec)
@@ -70,7 +74,6 @@ class CompactCalendarView @JvmOverloads constructor(
         }
         canvas.drawText(headerText, w / 2f, headerHeight * 0.7f, textPaint)
 
-        // Arrows
         textPaint.textSize = cellH * 0.6f
         val arrowY = headerHeight * 0.7f
         canvas.drawText("◀", cellW, arrowY, textPaint)
@@ -86,8 +89,8 @@ class CompactCalendarView @JvmOverloads constructor(
 
         for (i in 0..6) {
             textPaint.color = when (i) {
-                0 -> 0xFFE05050.toInt()    // Sunday red
-                6 -> 0xFF5599CC.toInt()    // Saturday blue
+                0 -> 0xFFE05050.toInt()
+                6 -> 0xFF5599CC.toInt()
                 else -> 0xFFDDDDDD.toInt()
             }
             canvas.drawText(jpWeekdays[i], cellW * i + cellW / 2f, y, textPaint)
@@ -114,18 +117,19 @@ class CompactCalendarView @JvmOverloads constructor(
             val cx = cellW * col + cellW / 2f
             val cy = baseY + cellH * row + cellH / 2f
 
-            // Today circle
+            val isHoliday = HolidayRepository.isHoliday(context, displayYear, displayMonth, day)
+
             if (isCurrentMonth && day == todayDate) {
                 circlePaint.color = 0xFF5DCAA5.toInt()
                 val radius = cellH * 0.3f
                 canvas.drawCircle(cx, cy, radius, circlePaint)
                 textPaint.color = 0xFF1A1A2E.toInt()
+            } else if (isHoliday || col == 0) {
+                textPaint.color = 0xFFE05050.toInt()
+            } else if (col == 6) {
+                textPaint.color = 0xFF5599CC.toInt()
             } else {
-                textPaint.color = when (col) {
-                    0 -> 0xFFE05050.toInt()
-                    6 -> 0xFF5599CC.toInt()
-                    else -> 0xFFDDDDDD.toInt()
-                }
+                textPaint.color = 0xFFDDDDDD.toInt()
             }
 
             canvas.drawText(day.toString(), cx, cy + textPaint.textSize * 0.35f, textPaint)
@@ -149,23 +153,15 @@ class CompactCalendarView @JvmOverloads constructor(
     }
 
     private fun prevMonth() {
-        if (displayMonth == 0) {
-            displayMonth = 11
-            displayYear--
-        } else {
-            displayMonth--
-        }
+        if (displayMonth == 0) { displayMonth = 11; displayYear-- }
+        else displayMonth--
         requestLayout()
         invalidate()
     }
 
     private fun nextMonth() {
-        if (displayMonth == 11) {
-            displayMonth = 0
-            displayYear++
-        } else {
-            displayMonth++
-        }
+        if (displayMonth == 11) { displayMonth = 0; displayYear++ }
+        else displayMonth++
         requestLayout()
         invalidate()
     }
@@ -179,6 +175,6 @@ class CompactCalendarView @JvmOverloads constructor(
     private fun getFirstDayOfWeek(year: Int, month: Int): Int {
         val c = Calendar.getInstance()
         c.set(year, month, 1)
-        return c.get(Calendar.DAY_OF_WEEK) - 1 // Sunday=0
+        return c.get(Calendar.DAY_OF_WEEK) - 1
     }
 }
