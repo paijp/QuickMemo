@@ -20,6 +20,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import java.util.Calendar
 
 class MemoActivity : AppCompatActivity() {
 
@@ -82,9 +83,26 @@ class MemoActivity : AppCompatActivity() {
         }
 
         btnEditKeywords.setOnClickListener { showEditKeywordsDialog() }
+
+        calendarView.onDateTap = { year, month, day ->
+            val now = Calendar.getInstance()
+            val tapped = Calendar.getInstance().apply { set(year, month, day) }
+            val diffMs = kotlin.math.abs(now.timeInMillis - tapped.timeInMillis)
+            val sixMonthsMs = 6L * 30 * 24 * 60 * 60 * 1000
+
+            val dateStr = if (diffMs <= sixMonthsMs) {
+                "${month + 1}/${day}"
+            } else {
+                "${year}/${month + 1}/${day}"
+            }
+
+            val start = memoInput.selectionStart.coerceAtLeast(0)
+            val end = memoInput.selectionEnd.coerceAtLeast(0)
+            memoInput.text.replace(start.coerceAtMost(end), start.coerceAtLeast(end), dateStr)
+        }
+
         memoInput.requestFocus()
 
-        // Fetch holidays in background
         HolidayRepository.fetchIfNeeded(this) {
             calendarView.refreshHolidays()
         }
@@ -114,10 +132,7 @@ class MemoActivity : AppCompatActivity() {
                 setTextColor(0xFFDDDDDD.toInt())
                 setBackgroundResource(R.drawable.bg_keyword_button)
                 setPadding(28, 12, 28, 12)
-                minHeight = 0
-                minimumHeight = 0
-                minWidth = 0
-                minimumWidth = 0
+                minHeight = 0; minimumHeight = 0; minWidth = 0; minimumWidth = 0
                 isAllCaps = false
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -136,12 +151,7 @@ class MemoActivity : AppCompatActivity() {
     private fun refreshList() {
         listContainer.removeAllViews()
         val all = MemoRepository.getAll(this)
-
-        if (all.isEmpty()) {
-            addInfoRow(getString(R.string.no_memos))
-            return
-        }
-
+        if (all.isEmpty()) { addInfoRow(getString(R.string.no_memos)); return }
         if (isLocked) {
             val showCount = sessionAddedCount.coerceAtMost(all.size)
             for (i in 0 until showCount) addMemoRow(all[i], i, false)
@@ -154,52 +164,39 @@ class MemoActivity : AppCompatActivity() {
 
     private fun addMemoRow(text: String, index: Int, deletable: Boolean) {
         val row = layoutInflater.inflate(R.layout.item_memo, listContainer, false)
-        val tv = row.findViewById<TextView>(R.id.memoText)
+        row.findViewById<TextView>(R.id.memoText).text = text
         val progressBar = row.findViewById<View>(R.id.progressBar)
-        tv.text = text
-
         if (deletable) {
             row.alpha = 0f
             row.animate().alpha(1f).setDuration(300).setStartDelay((index * 50).toLong()).start()
             setupLongPressDelete(row, progressBar, index)
-        } else {
-            progressBar.visibility = View.GONE
-        }
-
+        } else { progressBar.visibility = View.GONE }
         listContainer.addView(row)
     }
 
     private fun setupLongPressDelete(row: View, progressBar: View, index: Int) {
         val handler = Handler(Looper.getMainLooper())
-        var pressing = false
-        var elapsed = 0L
-
-        val progressRunnable = object : Runnable {
+        var pressing = false; var elapsed = 0L
+        val runnable = object : Runnable {
             override fun run() {
                 if (!pressing) return
                 elapsed += PROGRESS_INTERVAL
-                val fraction = (elapsed.toFloat() / LONG_PRESS_DURATION).coerceAtMost(1f)
-                progressBar.scaleX = fraction
+                progressBar.scaleX = (elapsed.toFloat() / LONG_PRESS_DURATION).coerceAtMost(1f)
                 if (elapsed >= LONG_PRESS_DURATION) {
-                    pressing = false
-                    progressBar.scaleX = 0f
-                    performDelete(index)
-                } else {
-                    handler.postDelayed(this, PROGRESS_INTERVAL)
-                }
+                    pressing = false; progressBar.scaleX = 0f; performDelete(index)
+                } else handler.postDelayed(this, PROGRESS_INTERVAL)
             }
         }
-
         row.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     pressing = true; elapsed = 0L
                     progressBar.visibility = View.VISIBLE; progressBar.scaleX = 0f
-                    handler.postDelayed(progressRunnable, PROGRESS_INTERVAL); true
+                    handler.postDelayed(runnable, PROGRESS_INTERVAL); true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     pressing = false; elapsed = 0L; progressBar.scaleX = 0f
-                    handler.removeCallbacks(progressRunnable); true
+                    handler.removeCallbacks(runnable); true
                 }
                 else -> false
             }
@@ -209,57 +206,38 @@ class MemoActivity : AppCompatActivity() {
     private fun performDelete(index: Int) {
         val deletedText = MemoRepository.getAll(this).getOrNull(index) ?: return
         MemoRepository.removeAt(this, index)
-        refreshList()
-        MemoNotificationService.updateNotification(this)
-
+        refreshList(); MemoNotificationService.updateNotification(this)
         Snackbar.make(rootView, getString(R.string.deleted), Snackbar.LENGTH_LONG)
             .setAction(getString(R.string.btn_undo)) {
                 MemoRepository.insertAt(this, index, deletedText)
-                refreshList()
-                MemoNotificationService.updateNotification(this)
-            }
-            .setActionTextColor(0xFF5DCAA5.toInt())
-            .show()
+                refreshList(); MemoNotificationService.updateNotification(this)
+            }.setActionTextColor(0xFF5DCAA5.toInt()).show()
     }
 
     private fun addInfoRow(text: String) {
-        val tv = TextView(this).apply {
-            this.text = text
-            setTextColor(0xFF888888.toInt())
-            textSize = 14f
+        listContainer.addView(TextView(this).apply {
+            this.text = text; setTextColor(0xFF888888.toInt()); textSize = 14f
             setPadding(0, 24, 0, 24)
-        }
-        listContainer.addView(tv)
+        })
     }
 
     private fun showEditKeywordsDialog() {
-        val oldKeywords = KeywordRepository.getAll(this)
+        val old = KeywordRepository.getAll(this)
         val input = EditText(this).apply {
-            setText(oldKeywords.joinToString(", "))
-            hint = getString(R.string.keyword_edit_hint)
-            setTextColor(0xFF222222.toInt())
-            textSize = 15f
-            setPadding(48, 32, 48, 32)
+            setText(old.joinToString(", ")); hint = getString(R.string.keyword_edit_hint)
+            setTextColor(0xFF222222.toInt()); textSize = 15f; setPadding(48, 32, 48, 32)
         }
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.keyword_edit_title))
-            .setView(input)
+            .setTitle(getString(R.string.keyword_edit_title)).setView(input)
             .setPositiveButton(getString(R.string.btn_save)) { _, _ ->
-                val t = input.text.toString()
-                val newList = t.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                if (newList.isNotEmpty()) {
-                    KeywordRepository.save(this, newList)
-                    refreshKeywords()
+                val list = input.text.toString().split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                if (list.isNotEmpty()) {
+                    KeywordRepository.save(this, list); refreshKeywords()
                     Snackbar.make(rootView, getString(R.string.keywords_changed), Snackbar.LENGTH_LONG)
                         .setAction(getString(R.string.btn_undo)) {
-                            KeywordRepository.save(this, oldKeywords)
-                            refreshKeywords()
-                        }
-                        .setActionTextColor(0xFF5DCAA5.toInt())
-                        .show()
+                            KeywordRepository.save(this, old); refreshKeywords()
+                        }.setActionTextColor(0xFF5DCAA5.toInt()).show()
                 }
-            }
-            .setNegativeButton(getString(R.string.btn_cancel), null)
-            .show()
+            }.setNegativeButton(getString(R.string.btn_cancel), null).show()
     }
 }
