@@ -9,6 +9,9 @@
     <string name="btn_save">Save</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_undo">Undo</string>
+    <string name="btn_update">Update</string>
+    <string name="btn_update_details">View details</string>
+    <string name="update_available">New version %s is available</string>
     <string name="no_memos">No memos yet</string>
     <string name="other_items">Other %d item(s)</string>
     <string name="deleted">Deleted</string>

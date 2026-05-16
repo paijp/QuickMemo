@@ -9,6 +9,9 @@
     <string name="btn_save">保存</string>
     <string name="btn_cancel">キャンセル</string>
     <string name="btn_undo">元に戻す</string>
+    <string name="btn_update">アップデートする</string>
+    <string name="btn_update_details">内容を確認する</string>
+    <string name="update_available">新しいバージョン %s が利用可能です</string>
     <string name="no_memos">メモはまだありません</string>
     <string name="other_items">他%d件</string>
     <string name="deleted">削除しました</string>
