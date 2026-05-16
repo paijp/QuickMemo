@@ -15,10 +15,26 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        release {
+            def ksFile = file("keystore.jks")
+            if (ksFile.exists()) {
+                storeFile ksFile
+                storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias System.getenv("KEY_ALIAS") ?: ""
+                keyPassword System.getenv("KEY_PASSWORD") ?: ""
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            def ksFile = file("keystore.jks")
+            if (ksFile.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 

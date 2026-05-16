@@ -26,23 +26,43 @@ jobs:
       with:
         gradle-version: '8.5'
 
-    - name: Build with Gradle
+    - name: Decode keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore.jks
+
+    - name: Build debug APK
       run: gradle assembleDebug
 
-    - name: Upload APK artifact
+    - name: Build signed release APK
+      run: gradle assembleRelease
+      env:
+        KEYSTORE_FILE: keystore.jks
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+    - name: Upload debug APK
       uses: actions/upload-artifact@v4
       with:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
         if-no-files-found: warn
 
-    - name: Commit APK to repository
+    - name: Upload release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: app/build/outputs/apk/release/*.apk
+        if-no-files-found: warn
+
+    - name: Commit APKs to repository
       if: github.ref == 'refs/heads/dev'
       run: |
         mkdir -p release
-        cp app/build/outputs/apk/debug/*.apk release/
+        cp app/build/outputs/apk/debug/*.apk release/ 2>/dev/null || true
+        cp app/build/outputs/apk/release/*.apk release/ 2>/dev/null || true
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add release/
-        git diff --cached --quiet || git commit -m "Add debug APK from CI build #${{ github.run_number }}"
+        git diff --cached --quiet || git commit -m "Add APKs from CI build #${{ github.run_number }}"
         git push
